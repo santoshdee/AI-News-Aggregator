@@ -19,7 +19,9 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 public class AiSummarizer {
-    private static final Dotenv dotenv = Dotenv.load(); // loads .env file
+    private static final Dotenv dotenv = Dotenv.configure()
+            .directory("ai-news-aggregator")
+            .load(); // loads .env file
     private static final String API_KEY = dotenv.get("GEMINI_API_KEY");
     private static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + API_KEY;
     private static final WebClient webClient = WebClient.builder().build();
