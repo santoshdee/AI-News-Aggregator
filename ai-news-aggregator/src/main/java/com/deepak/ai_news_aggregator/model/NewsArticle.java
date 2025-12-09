@@ -1,6 +1,5 @@
 package com.deepak.ai_news_aggregator.model;
 
-import com.deepak.ai_news_aggregator.util.ArticleStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +30,4 @@ public class NewsArticle {
     private String category;
     private String source;  // website name
     private String summary; // ai-generated, initially null
-
-    @Indexed
-    private ArticleStatus status; // enum status (PENDING, DONE, FAILED)
 }

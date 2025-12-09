@@ -3,7 +3,6 @@ package com.deepak.ai_news_aggregator.service;
 import com.deepak.ai_news_aggregator.model.NewsArticle;
 import com.deepak.ai_news_aggregator.repository.NewsArticleRepository;
 import com.deepak.ai_news_aggregator.util.ArticleExtractor;
-import com.deepak.ai_news_aggregator.util.ArticleStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -25,12 +24,9 @@ import static com.deepak.ai_news_aggregator.util.NewsConstants.RSS_FEEDS;
 public class NewsFetcherService {
 
     private final NewsArticleRepository newsArticleRepository;
-    private final SummarizationProducer summarizationProducer;
 
-    public NewsFetcherService(NewsArticleRepository newsArticleRepository,
-                              SummarizationProducer summarizationProducer) {
+    public NewsFetcherService(NewsArticleRepository newsArticleRepository) {
         this.newsArticleRepository = newsArticleRepository;
-        this.summarizationProducer = summarizationProducer;
     }
 
     @Scheduled(fixedRate = 300*1000)  // every 5 min for testing
@@ -81,11 +77,9 @@ public class NewsFetcherService {
                             .pubDate(pubDate)
                             .category(category)
                             .source(source)
-                            .status(ArticleStatus.PENDING) // latest addition to tackle article summaries
                             .build();
 
                     newsArticleRepository.save(article);
-                    summarizationProducer.sendArticleForSummarization(link, true); // send to RabbitMQ, new article, high priority
                     log.info("Article saved: {} [{} | {}]", title, category, source);
                 }
 
