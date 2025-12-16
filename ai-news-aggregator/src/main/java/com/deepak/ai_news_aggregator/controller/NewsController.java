@@ -109,7 +109,7 @@ public class NewsController {
     // --------------------- FILTER ------------------------------
     @PostMapping("/filter")
     public ResponseEntity<?> filterNews(@RequestBody(required = false) NewsFilterRequest filterRequest) throws ParseException {
-        if (filterRequest == null) {
+        if (filterRequest == null) { // rare - explicitly when client sends 'null'
             throw new IllegalArgumentException("Filter request body is required");
         }
 
@@ -155,9 +155,11 @@ public class NewsController {
             criteriaList.add(dateCriteria);
         }
 
-        if (!criteriaList.isEmpty()) {
-            query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
+        if (criteriaList.isEmpty()) {
+           throw new IllegalArgumentException("At least one filter must be provided");
         }
+
+        query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
 
         query.with(Sort.by(Sort.Direction.DESC, "pubDate"));
         List<NewsArticle> results = mongoTemplate.find(query, NewsArticle.class);
