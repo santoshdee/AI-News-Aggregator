@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,6 +18,16 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@CompoundIndexes({
+        @CompoundIndex(
+                name = "category_pubDate_idx",
+                def = "{'category': 1, 'pubDate': -1}"
+        ),
+        @CompoundIndex(
+                name = "source_pubDate_idx",
+                def = "{'source': 1, 'pubDate': -1}"
+        )
+})
 public class NewsArticle {
     @Id
     private String link; // this acts as both ID and actual article link

@@ -10,7 +10,14 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
-public class NewsSuccessResponse {
+public class NewsPageResponse {
     private String message;
     private List<NewsArticle> articles;
+
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
+    private boolean hasNext;
+    private boolean hasPrevious;
 }

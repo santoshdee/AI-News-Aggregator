@@ -1,20 +1,21 @@
 package com.deepak.ai_news_aggregator.controller;
 
-import com.deepak.ai_news_aggregator.dto.NewsSuccessResponse;
+import com.deepak.ai_news_aggregator.dto.NewsPageResponse;
 import com.deepak.ai_news_aggregator.repository.NewsArticleRepository;
 import com.deepak.ai_news_aggregator.dto.NewsFilterRequest;
 import com.deepak.ai_news_aggregator.model.NewsArticle;
+import com.deepak.ai_news_aggregator.util.PaginationUtil;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.deepak.ai_news_aggregator.util.NewsConstants.ALLOWED_CATEGORIES;
 import static com.deepak.ai_news_aggregator.util.NewsConstants.ALLOWED_SOURCES;
@@ -33,28 +34,48 @@ public class NewsController {
         this.mongoTemplate = mongoTemplate;
     }
 
-    // --------------------- LATEST ------------------------------
+    /// --------------------- LATEST ------------------------------
 
     @GetMapping("/latest")
-    public ResponseEntity<?> getLatestNews() {
-        List<NewsArticle> articles = newsArticleRepository.findAllByOrderByPubDateDesc();
+    public ResponseEntity<?> getLatestNews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PaginationUtil.createPageable(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "pubDate")
+        );
 
-        if(articles.isEmpty()) {
+        Page<NewsArticle> articlePage = newsArticleRepository.findAllByOrderByPubDateDesc(pageable);
+
+        if(articlePage.isEmpty()) {
             return ResponseEntity.noContent().build(); // 204
         }
 
         return ResponseEntity.ok(
-                NewsSuccessResponse.builder()
-                        .message("Fetched " + articles.size() + " latest articles")
-                        .articles(articles)
+                NewsPageResponse.builder()
+                        .message("Fetched latest news articles")
+                        .articles(articlePage.getContent())
+                        .page(articlePage.getNumber())
+                        .size(articlePage.getSize())
+                        .totalElements(articlePage.getTotalElements())
+                        .totalPages(articlePage.getTotalPages())
+                        .hasNext(articlePage.hasNext())
+                        .hasPrevious(articlePage.hasPrevious())
                         .build()
         );
     }
 
-    // --------------------- CATEGORY ------------------------------
+    /// --------------------- CATEGORY ------------------------------
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<?> getNewsByCategory(@PathVariable String category) {
+    public ResponseEntity<?> getNewsByCategory(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        // validation
         if(category == null || category.trim().isEmpty()) {
             throw new IllegalArgumentException("Category cannot be empty");
         }
@@ -66,22 +87,43 @@ public class NewsController {
             );
         }
 
-        List<NewsArticle> articles = newsArticleRepository.findByCategoryOrderByPubDateDesc(normalizedCategory);
-        if(articles.isEmpty()) {
-            return ResponseEntity.noContent().build();
+        Pageable pageable = PaginationUtil.createPageable(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "pubDate")
+        );
+
+        Page<NewsArticle> articlePage = newsArticleRepository.findByCategoryOrderByPubDateDesc(
+                normalizedCategory,
+                pageable
+        );
+
+        if(articlePage.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
         }
         return ResponseEntity.ok(
-                NewsSuccessResponse.builder()
-                        .message("Fetched " + articles.size() + " articles from category: " + normalizedCategory)
-                        .articles(articles)
+                NewsPageResponse.builder()
+                        .message("Fetched news articles for category: " + normalizedCategory)
+                        .articles(articlePage.getContent())
+                        .page(articlePage.getNumber())
+                        .size(articlePage.getSize())
+                        .totalElements(articlePage.getTotalElements())
+                        .totalPages(articlePage.getTotalPages())
+                        .hasNext(articlePage.hasNext())
+                        .hasPrevious(articlePage.hasPrevious())
                         .build()
         );
     }
 
-    // --------------------- SOURCE ------------------------------
+    /// --------------------- SOURCE ------------------------------
 
     @GetMapping("/source/{source}")
-    public ResponseEntity<?> getNewsBySource(@PathVariable String source) {
+    public ResponseEntity<?> getNewsBySource(
+            @PathVariable String source,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        // validation
         if(source == null || source.trim().isEmpty()) {
             throw new IllegalArgumentException("Source cannot be empty");
         }
@@ -93,22 +135,45 @@ public class NewsController {
             );
         }
 
-        List<NewsArticle> articles = newsArticleRepository.findBySourceOrderByPubDateDesc(normalizedSource);
-        if(articles.isEmpty()) {
+        Pageable pageable = PaginationUtil.createPageable(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "pubDate")
+        );
+
+        Page<NewsArticle> articlePage = newsArticleRepository.findBySourceOrderByPubDateDesc(
+                normalizedSource,
+                pageable
+        );
+
+        if(articlePage.isEmpty()) {
             return ResponseEntity.noContent().build(); // 204
         }
 
         return ResponseEntity.ok(
-                NewsSuccessResponse.builder()
-                        .message("Fetched " + articles.size() + " articles from source: " + normalizedSource)
-                        .articles(articles)
+                NewsPageResponse.builder()
+                        .message("Fetched news articles for source: " + normalizedSource)
+                        .articles(articlePage.getContent())
+                        .page(articlePage.getNumber())
+                        .size(articlePage.getSize())
+                        .totalElements(articlePage.getTotalElements())
+                        .totalPages(articlePage.getTotalPages())
+                        .hasNext(articlePage.hasNext())
+                        .hasPrevious(articlePage.hasPrevious())
                         .build()
         );
     }
 
-    // --------------------- FILTER ------------------------------
+    /// --------------------- FILTER ------------------------------
+
     @PostMapping("/filter")
-    public ResponseEntity<?> filterNews(@RequestBody(required = false) NewsFilterRequest filterRequest) throws ParseException {
+    public ResponseEntity<?> filterNews(
+            @RequestBody(required = false) NewsFilterRequest filterRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws ParseException {
+
+        // body validation
         if (filterRequest == null) { // rare - explicitly when client sends 'null'
             throw new IllegalArgumentException("Filter request body is required");
         }
@@ -118,7 +183,8 @@ public class NewsController {
 
         // keyword search in title or content (case-insensitive)
         if (filterRequest.getKeyword() != null && !filterRequest.getKeyword().isBlank()) {
-            String keyword = filterRequest.getKeyword();
+            String keyword = Pattern.quote(filterRequest.getKeyword().trim());
+
             Criteria keywordCriteria = new Criteria().orOperator(
                     Criteria.where("title").regex(keyword, "i"),
                     Criteria.where("content").regex(keyword, "i")
@@ -128,12 +194,14 @@ public class NewsController {
 
         // category (case-insensitive)
         if (filterRequest.getCategory() != null && !filterRequest.getCategory().isBlank()) {
-            criteriaList.add(Criteria.where("category").regex("^" + filterRequest.getCategory() + "$", "i"));
+            String category = filterRequest.getCategory().trim().toLowerCase();
+            criteriaList.add(Criteria.where("category").regex("^" + Pattern.quote(category) + "$", "i"));
         }
 
         // source (case-insensitive)
         if (filterRequest.getSource() != null && !filterRequest.getSource().isBlank()) {
-            criteriaList.add(Criteria.where("source").regex("^" + filterRequest.getSource() + "$", "i"));
+            String source = filterRequest.getSource().trim().toLowerCase();
+            criteriaList.add(Criteria.where("source").regex("^" + Pattern.quote(source) + "$", "i"));
         }
 
         // date range
@@ -161,17 +229,35 @@ public class NewsController {
 
         query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
 
-        query.with(Sort.by(Sort.Direction.DESC, "pubDate"));
-        List<NewsArticle> results = mongoTemplate.find(query, NewsArticle.class);
+        // pagination
+        Pageable pageable = PaginationUtil.createPageable(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "pubDate")
+        );
+        query.with(pageable);
 
-        if (results.isEmpty()) {
+        // fetch paginated articles
+        List<NewsArticle> articles = mongoTemplate.find(query, NewsArticle.class);
+
+        if (articles.isEmpty()) {
             return ResponseEntity.noContent().build(); // 204
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                NewsSuccessResponse.builder()
-                        .message(results.size() + " Filtered news articles retrieved successfully")
-                        .articles(results)
+        // total count
+        long totalElements = mongoTemplate.count(query.skip(0).limit(0), NewsArticle.class);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+
+        return ResponseEntity.ok(
+                NewsPageResponse.builder()
+                        .message("Filtered articles fetched successfully")
+                        .articles(articles)
+                        .page(page)
+                        .size(size)
+                        .totalElements(totalElements)
+                        .totalPages(totalPages)
+                        .hasNext((page + 1) * size < totalElements)
+                        .hasPrevious(page > 0)
                         .build()
         );
     }
