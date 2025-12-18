@@ -20,4 +20,5 @@ public interface NewsArticleRepository extends MongoRepository<NewsArticle, Stri
             String source,
             Pageable pageable
     );
+    List<NewsArticle> findBySummaryIsNullOrderByPubDateDesc(Pageable pageable);
 }

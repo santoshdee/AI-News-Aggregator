@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Document(collection = "news_article")
@@ -42,4 +43,6 @@ public class NewsArticle {
     private String category;
     private String source;  // website name
     private String summary; // ai-generated, initially null
+    private int retryCount = 0; // number of failed summarization attempts
+    private Instant lastSummaryAttemptAt; // used for backoff
 }
