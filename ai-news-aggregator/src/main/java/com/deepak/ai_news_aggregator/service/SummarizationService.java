@@ -1,6 +1,7 @@
 package com.deepak.ai_news_aggregator.service;
 
 import com.deepak.ai_news_aggregator.model.NewsArticle;
+import com.deepak.ai_news_aggregator.provider.SummarizationProviderRouter;
 import com.deepak.ai_news_aggregator.repository.NewsArticleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class SummarizationService {
     private static final int MAX_RETRIES = 5;
 
     private final NewsArticleRepository newsArticleRepository;
+    private final SummarizationProviderRouter providerRouter;
 
     public void summarizePendingArticles() {
         log.info("Fetching articles pending summarization");
@@ -46,11 +48,31 @@ public class SummarizationService {
             article.setLastSummaryAttemptAt(now);
             newsArticleRepository.save(article);
 
-            log.info(
-                    "Article id={} is eligible for summarization (retryCount={})",
-                    article.getLink(),
-                    article.getRetryCount()
-            );
+            try {
+                log.info(
+                        "Starting summarization for article id = {}",
+                        article.getLink()
+                );
+
+                String summary = providerRouter.summarizeWithFallback(article.getContent());
+
+                article.setSummary(summary);
+                article.setRetryCount(0);       // reset on success
+                newsArticleRepository.save(article);
+
+                log.info("Successfully summarized article id = {}", article.getLink());
+
+            } catch(Exception ex) {
+                article.setRetryCount(article.getRetryCount() + 1);
+                newsArticleRepository.save(article);
+
+                log.error(
+                        "Summarization failed for article id = {}, retryCount = {}",
+                        article.getLink(),
+                        article.getRetryCount(),
+                        ex
+                );
+            }
 
             // Next step here: call AI for summarization
         }
