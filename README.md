@@ -1,32 +1,79 @@
-# AI-Powered News Aggregator with Summarization
+# AI-Powered News Aggregator
 
-An intelligent **Spring Boot** application that fetches articles from multiple **RSS feeds**, stores them in **MongoDB**, and generates concise summaries using **Google Gemini API**.  
-The system is designed with **scalable architecture**, supports **pagination** for efficient browsing, and demonstrates a modern AI-powered workflow for content aggregation.
+An intelligent backend system that aggregates news from mutliple RSS feeds, extracts full article content, and generates AI-powered summaries using a resilient multi-provider fallback architecture.
+
+Built with Spring Boot + MongoDB, featuring asynchronous background processing, rate-limit handling, and multi-model AI orchestration
 
 ---
 
-## Features
-- **RSS Feed Integration**: Fetches latest news articles from sources like *TechCrunch, ScienceDaily, IndianExpress, HindustanTimes*.
-- **HTML Parsing with Jsoup**: Extracts clean article text from full web pages.
-- **AI Summarization Workflow**: Uses **Spring WebClient** to send articles to **Gemini API** and generate summaries.
-- **MongoDB Storage**: Stores articles with fields like title, description, publication date, source, category, and AI summary.
-- **REST API Endpoints**:  
-  - `GET /news/latest` → Fetch latest articles 
-  - `GET /news/category/{category}` → Fetch articles by category  
-  - `GET /news/source/{source}` → Fetch articles by source  
-  - `POST /news/filter` → Flexible filtering with JSON body  
-- **Pagination Utility**: Reusable `PaginationUtil` ensures consistent pagination across endpoints.
-- **Scheduled Fetching**: Periodically pulls and stores fresh content from configured RSS feeds.
+## Architecture Overview
+1. **RSS Ingestion Layer**
+   - Fetches articles from external RSS feeds
+   - Extracts full article content using JSOUP
+   - Stores articles in MongoDB with `summary = null`
+2. **Background Summarization Pipeline**
+   - Runs via Spring `@Scheduled`
+   - Process articles in small batches (latest-first)
+   - Applies exponential backoff for retries
+   - Handles AI provider failures gracefully
+3. **AI Provider Orchestration**
+   Implements deterministic fallback:
+   - Groq (Primary - low latency)
+   - Gemini (Secondary)
+   - Hugging Face (Final fallback)
+   If one provider fails (e.g., 429 rate limit), the system automatically switches to the next      provider
+
+## Key Features
+- AI-powered article summarization
+- Multi-provider fallback (Groq, Gemini, Hugging Face)
+- Exponential backoff retry strategy
+- Rate-limit resilience (HTTP 429 handling)
+- Asynchronous background processing
+- Latest-first prioritization
+- Pagination-optimized REST APIs
+- Clean separation of concerns
+- Fault-tolerant architecture
 
 ---
 
 ## Tech Stack
-- **Backend**: Spring Boot 3.x (Java 21)
-- **Database**: MongoDB (NoSQL, document storage)
-- **Libraries & Tools**:  
-  - `Jsoup` → HTML parsing & article text extraction  
-  - `Spring WebClient` → Asynchronous external API calls  
-  - `Spring Data MongoDB` → Repository support  
-  - `Lombok` → Boilerplate reduction  
-- **AI Integration**: Google **Gemini API** for summarization
-- **Build Tool**: Maven
+- **Backend**
+  - Java 21
+  - Spring Boot 3.x
+  - Spring Scheduling
+  - Spring Data MongoDB
+  - Rest APIs
+- **Database**
+  - MongoDB
+    - Flexible schema
+    - Efficient storage for RSS articles
+- **AI Providers**
+  - Groq
+  - Gemini API
+  - Hugging Face Inference Router
+- **Content Extraction**
+  - JSOUP (HTML parsing and article content scraping)
+- Utilities & Tools
+  - Lombok
+  - Jackson (JSON parsing)
+  - RestTemplate (HTTP client)
+ 
+---
+
+## Summarization Flow
+1. Article saved with summary = null
+2. Scheduled job runs every 2 minutes
+3. Fetches latest unsummarized articles
+4. Applies backoff eligibility logic
+5. Calls AI provider router
+6. On success -> saves summary
+7. On failure -> increments retry count
+
+---
+
+## Scalability Considerations
+- Batch-based processing prevents API flooding
+- Provider abstraction allows easy addition of new AI models
+- Deterministic fallback ensures summary generation despite failures
+- Ready to evolve into queue-based architecture (Kafka / RabbitMQ)
+
