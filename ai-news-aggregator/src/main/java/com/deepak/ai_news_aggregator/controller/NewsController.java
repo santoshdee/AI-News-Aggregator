@@ -22,6 +22,7 @@ import static com.deepak.ai_news_aggregator.util.NewsConstants.ALLOWED_SOURCES;
 
 @RestController
 @RequestMapping("/news")
+@CrossOrigin(origins = "http://localhost:5173")
 public class NewsController {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

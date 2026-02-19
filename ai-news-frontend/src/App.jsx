@@ -1,9 +1,7 @@
+import AppRouter from "./router/AppRouter";
+
 function App() {
-  return (
-    <div>
-      <h1>News Byte - Frontend by React</h1>
-    </div>
-  );
+  return <AppRouter />;
 }
 
-export default App
+export default App;
