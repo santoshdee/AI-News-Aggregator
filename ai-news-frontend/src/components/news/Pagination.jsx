@@ -10,8 +10,6 @@ export default function Pagination({ pagination }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-//   if (!pagination) return null;
-
   const currentPage = Number(searchParams.get("page")) || 0;
 
   const { totalPages, hasNext, hasPrevious } = pagination;

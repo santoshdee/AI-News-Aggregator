@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { fetchLatestNews } from "../api/newsApi";
+import { fetchByCategory, fetchBySource, fetchLatestNews } from "../api/newsApi";
 
-export default function useNews(page) {
+export default function useNews({ type, value, page }) {
     const [articles, setArticles] = useState([]);
     const [pagination, setPagination] = useState({
         page: 0,
@@ -17,8 +17,18 @@ export default function useNews(page) {
     useEffect(() => {
         const loadNews = async () => {
             try {
-                setLoading(true)
-                const data = await fetchLatestNews(page);
+                setLoading(true);
+                setError(null);
+
+                let data;
+                if(type === "category") {
+                    data = await fetchByCategory(value, page);
+                } else if(type === "source") {
+                    data = await fetchBySource(value, page);
+                } else {
+                    data = await fetchLatestNews(page);
+                }
+
                 setArticles(data.articles);
                 setPagination({
                     page: data.page,
@@ -36,7 +46,7 @@ export default function useNews(page) {
         };
 
         loadNews();
-    }, [page]);
+    }, [type, value, page]);
 
     return {articles, pagination, loading, error};
 }
