@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function ArticleItem({ article }) {
   const formattedDate = article.pubDate
     ? new Date(article.pubDate).toLocaleDateString()
@@ -22,8 +24,20 @@ export default function ArticleItem({ article }) {
         <p className="text-gray-600 mt-2">{article.summary}</p>
       )}
 
-      <div className="text-sm text-gray-500 mt-4 captialize">
-        {article.category} • {article.source} • {formattedDate} • {formattedTime}
+      <div className="text-sm text-gray-500 mt-4 captialize space-x-2">
+        {/* {article.category} • {article.source} • {formattedDate} • {formattedTime} */}
+        <span>{article.category}</span>
+        <span>•</span>
+        <Link
+          to={`/source/${article.source}`}
+          className="hover:text-blue-600"
+        >
+          {article.source}
+        </Link>
+        <span>•</span>
+        <span>{formattedDate}</span>
+        <span>•</span>
+        <span>{formattedTime}</span>
       </div>
     </div>
   );
