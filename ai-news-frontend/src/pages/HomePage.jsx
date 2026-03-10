@@ -5,33 +5,40 @@ import Navbar from "../components/layout/Navbar";
 import ArticleList from "../components/news/ArticleList";
 import useNews from "../hooks/useNews";
 import Pagination from "../components/news/Pagination";
+import Loader from "../components/ui/Loader";
+import EmptyState from "../components/ui/EmptyState";
 
 export default function HomePage() {
-
   const [searchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 0;
 
-  const {articles, pagination, loading, error} = useNews({
+  const { articles, pagination, loading, error } = useNews({
     type: "latest",
     value: null,
-    page
+    page,
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col">
+    <div className="font-sans bg-slate-50 min-h-screen flex flex-col">
       <Navbar />
       <Container>
-        <h1 className="text-xl font-semibold mt-8 mb-6">Latest News</h1>
+        <h1 className="font-serif text-2xl text-center font-semibold mt-8 mb-6">
+          Latest News
+        </h1>
 
-        {loading && <p className="text-gray-500">Loading...</p>}
+        {loading && <Loader />}
         {error && <p className="text-red-500">{error}</p>}
 
-        {!loading && !error && (
-          <>
-            <ArticleList articles={articles} />
-            <Pagination pagination={pagination}/>
-          </>
-        )}
+        {!loading &&
+          !error &&
+          (articles.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              <ArticleList articles={articles} />
+              <Pagination pagination={pagination} />
+            </>
+          ))}
       </Container>
       <Footer />
     </div>

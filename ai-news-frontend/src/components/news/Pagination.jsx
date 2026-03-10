@@ -50,15 +50,15 @@ export default function Pagination({ pagination }) {
   const pages = generatePages();
 
   return (
-    <div className="flex justify-center items-center gap-4 mt-10 mb-6 text-sm">
+    <div className="flex justify-center items-center gap-4 mt-10 text-sm">
       {/* Previous */}
       <button
         onClick={() => goToPage(currentPage - 1)}
         disabled={!hasPrevious}
         className={`px-3 py-1 border rounded ${
           !hasPrevious
-            ? "text-gray-400 border-gray-200 cursor-not-allowed"
-            : "hover:bg-gray-100"
+            ? "text-gray-400 border-slate-200 cursor-not-allowed"
+            : "hover:bg-indigo-100"
         }`}
       >
         Prev
@@ -68,7 +68,7 @@ export default function Pagination({ pagination }) {
       {pages.map((page, index) => {
         if (page === "left-ellipsis" || page === "right-ellipsis") {
           return (
-            <span key={index} className="px-2 text-gray-500">
+            <span key={index} className="px-2 text-slate-500">
               ...
             </span>
           );
@@ -80,8 +80,8 @@ export default function Pagination({ pagination }) {
             onClick={() => goToPage(page)}
             className={`px-3 py-1 rounded ${
               currentPage === page
-                ? "bg-blue-600 text-white"
-                : "hover:bg-gray-100"
+                ? "bg-indigo-600 text-white"
+                : "hover:bg-indigo-100"
             }`}
           >
             {page + 1}
@@ -95,8 +95,8 @@ export default function Pagination({ pagination }) {
         disabled={!hasNext}
         className={`px-3 py-1 border rounded ${
           !hasNext
-            ? "text-gray-400 border-gray-200 cursor-not-allowed"
-            : "hover:bg-gray-100"
+            ? "text-gray-400 border-slate-200 cursor-not-allowed"
+            : "hover:bg-indigo-100"
         }`}
       >
         Next

@@ -17,7 +17,9 @@ export default function useNews({ type, value, page }) {
     useEffect(() => {
         const loadNews = async () => {
             try {
+                const MIN_LOADING_TIME = 400;
                 setLoading(true);
+                const startTime = Date.now();
                 setError(null);
 
                 let data;
@@ -38,6 +40,14 @@ export default function useNews({ type, value, page }) {
                     hasNext: data.hasNext,
                     hasPrevious: data.hasPrevious
                 });
+
+                const elapsed = Date.now() - startTime;
+
+                if(elapsed < MIN_LOADING_TIME) {
+                  await new Promise(resolve => 
+                    setTimeout(resolve, MIN_LOADING_TIME - elapsed)
+                  );
+                }
             } catch (err) {
                 setError("Failed to fetch news ", err);
             } finally {

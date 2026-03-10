@@ -2,10 +2,15 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx}"
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Manrope", "ui-sans-serif", "system-ui"],
+        serif: ["Libre Baskerville", "serif"],
+      },
+    },
   },
   plugins: [],
 }

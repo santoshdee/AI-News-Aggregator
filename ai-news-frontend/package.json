@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.13.5",
+    "framer-motion": "^12.35.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0"
