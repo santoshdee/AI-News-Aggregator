@@ -1,36 +1,39 @@
 import { Link } from "react-router-dom";
+import { formatDate } from "../../utils/formatDate";
+import { motion } from "framer-motion";
 
 export default function ArticleItem({ article }) {
-  const formattedDate = article.pubDate
-    ? new Date(article.pubDate).toLocaleDateString()
-    : "";
+  const formattedDate = formatDate(article.pubDate);
 
   const formattedTime = article.pubDate
     ? new Date(article.pubDate).toLocaleTimeString()
     : "";
 
   return (
-    <div className="border-b border-gray-200 py-4">
+    <motion.div
+        whileHover={{y: -3}}
+        transition={{duration: 0.2}} 
+        className="group border-b border-slate-200 py-6 transition-colors duration-200 hover:bg-slate-100 px-2 -mx-2 rounded-md"
+      >
       <a
         href={article.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+        className="font-serif text-[1.45rem] leading-snug font-bold text-slate-1000 group-hover:text-indigo-700 transition-colors"
       >
         {article.title}
       </a>
 
       {article.summary && (
-        <p className="text-gray-600 mt-2">{article.summary}</p>
+        <p className="font-sans text-slate-700 mt-4 leading-relaxed text-[1.05rem] text-justify">{article.summary}</p>
       )}
 
-      <div className="text-sm text-gray-500 mt-4 captialize space-x-2">
-        {/* {article.category} • {article.source} • {formattedDate} • {formattedTime} */}
+      <div className="font-sans text-sm text-slate-500 mt-4 captialize space-x-2">
         <span>{article.category}</span>
         <span>•</span>
         <Link
           to={`/source/${article.source}`}
-          className="hover:text-blue-600"
+          className="hover:text-indigo-600"
         >
           {article.source}
         </Link>
@@ -39,6 +42,6 @@ export default function ArticleItem({ article }) {
         <span>•</span>
         <span>{formattedTime}</span>
       </div>
-    </div>
+    </motion.div>
   );
 }
