@@ -20,10 +20,10 @@ export default function SourcePage() {
   });
 
   return (
-    <div className="bg-slate-50 min-h-screen flex flex-col">
+    <div className="bg-slate-50 min-h-screen flex flex-col pb-10">
       <Navbar />
       <Container>
-        <h1 className="text-2xl font-serif font-semibold mt-8 mb-6 capitalize">
+        <h1 className="font-serif text-xl sm:text-2xl text-center font-semibold mt-6 sm:mt-8 mb-5 sm:mb-6 capitalize">
           {source}
         </h1>
 

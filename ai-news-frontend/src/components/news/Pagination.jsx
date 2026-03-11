@@ -50,7 +50,16 @@ export default function Pagination({ pagination }) {
   const pages = generatePages();
 
   return (
-    <div className="flex justify-center items-center gap-4 mt-10 text-sm">
+    <div className="
+      flex 
+      flex-wrap 
+      justify-center 
+      items-center 
+      gap-2 
+      sm:gap-4 
+      mt-10 
+      text-sm
+    ">
       {/* Previous */}
       <button
         onClick={() => goToPage(currentPage - 1)}
